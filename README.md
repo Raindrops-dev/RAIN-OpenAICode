@@ -2,7 +2,7 @@
 
 # PowerShell Script for Automating ChatGPT API
 
-This script is written to automate polling the OpenAI's GPT-3 API for the purpose of asking PowerShell commands. With this script, you can quickly get answers to your PowerShell questions without having to manually make API requests.
+This script is written to automate polling the OpenAI's ChatGPT API for the purpose of asking PowerShell commands. With this script, you can quickly get answers to your PowerShell questions without having to manually make API requests.
 
 ## How to Run the Script
 
