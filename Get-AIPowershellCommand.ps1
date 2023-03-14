@@ -26,7 +26,7 @@
 #Defining default parameter
 Param(
   [Parameter(Mandatory = $true, Position = 0)]
-  [string]$command = "Which commands can I request?"
+  [string]$Command = "Which commands can I request?"
 )
 
 #Clearing the Screen
@@ -60,25 +60,37 @@ $Headers = [ordered]@{
   "Authorization" = "Bearer $token"
 }
 
+#Using stopwatch to measure the time it takes to get a response from OpenAI
+$sw = [System.Diagnostics.Stopwatch]::StartNew()
 #Doing the API call
 $response = Invoke-WebRequest https://api.openai.com/v1/chat/completions -Method POST -Body $RequestBody -Headers $Headers
+#Stopping the stopwatch
+$sw.Stop()
+#Writing the time it took to get a response from OpenAI in seconds
+Write-Host "Time to get a response from OpenAI: $($sw.Elapsed.TotalSeconds) seconds" -ForegroundColor Green
 
 # echo the 'content' field of the response which is in JSON format
 $content = ConvertFrom-Json $response.Content | Select-Object -ExpandProperty choices | Select-Object -ExpandProperty message | Select-Object -ExpandProperty content
-Write-Warning "The command to execute is:"
-Write-Warning $content
+Write-Host "Your query was:" -ForegroundColor Green
+Write-Output $command
+Write-Host "The response from OpenAI was:" -ForegroundColor Green
+Write-Output $content
 
-#Ask user to confirm the command
-Write-Warning "Do you want to execute the command? [y/n]: "
-$key = [System.Console]::ReadKey($true)
+#Ensuring the user enters a valid key
+do {
+  Write-Warning "Do you want to execute this command? [y/n]: "
+  $key = [System.Console]::ReadKey($true)
+}while ($key.KeyChar -ne 'y' -and $key.KeyChar -ne 'Y' -and $key.KeyChar -ne 'n' -and $key.KeyChar -ne 'N')
 
-# if the user presses n, exit the script
-if ($key.KeyChar -eq 'n' -or $key.KeyChar -eq 'N') {
+#executing if the user pressed y or Y and exiting if the user pressed n or N
+if ($key.KeyChar -eq 'y' -or $key.KeyChar -eq 'Y') {
+  Write-Host "Executing command..." -ForegroundColor Green
+  #executing the command
+  Invoke-Expression $content
+}
+else {
   Write-Host "Aborted." -ForegroundColor Red
   exit 0
 }
-Write-Output "Executing command..." -ForegroundColor Green
-Write-Output ""
 
-#executing the command
-Invoke-Expression $content
+#end of script
