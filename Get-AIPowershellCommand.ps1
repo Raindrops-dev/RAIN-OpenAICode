@@ -22,6 +22,7 @@
     Company: Raindrops.dev
     Last Edit: 2023-03-14
     Version 0.1 Initial functional code
+    Assistance: Github Copilot
 #>
 #Defining default parameter
 Param(
@@ -60,14 +61,24 @@ $Headers = [ordered]@{
   "Authorization" = "Bearer $token"
 }
 
-#Using stopwatch to measure the time it takes to get a response from OpenAI
-$sw = [System.Diagnostics.Stopwatch]::StartNew()
-#Doing the API call
-$response = Invoke-WebRequest https://api.openai.com/v1/chat/completions -Method POST -Body $RequestBody -Headers $Headers
-#Stopping the stopwatch
-$sw.Stop()
-#Writing the time it took to get a response from OpenAI in seconds
-Write-Host "Time to get a response from OpenAI: $($sw.Elapsed.TotalSeconds) seconds" -ForegroundColor Green
+#Accounting for error "That model is currently overloaded with other requests." and retrying it query failed. Retry after 1 second for up to 5 times
+for ($i = 0; $i -lt 5; $i++) {
+  try {
+    #Using stopwatch to measure the time it takes to get a response from OpenAI
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    #Doing the API call
+    $response = Invoke-WebRequest https://api.openai.com/v1/chat/completions -Method POST -Body $RequestBody -Headers $Headers
+    #Stopping the stopwatch
+    $sw.Stop()
+    #Writing the time it took to get a response from OpenAI in seconds
+    Write-Host "Time to get a response from OpenAI: $($sw.Elapsed.TotalSeconds) seconds" -ForegroundColor Green
+    break
+  }
+  catch {
+    Write-Warning "That model is currently overloaded with other requests. Retrying in 1 second..."
+    Start-Sleep -Seconds 1
+  }
+}
 
 # echo the 'content' field of the response which is in JSON format
 $content = ConvertFrom-Json $response.Content | Select-Object -ExpandProperty choices | Select-Object -ExpandProperty message | Select-Object -ExpandProperty content
