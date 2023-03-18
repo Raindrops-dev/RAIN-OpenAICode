@@ -31,7 +31,7 @@ Param(
 )
 
 #Clearing the Screen
-Clear-Host
+#Clear-Host
 
 #Defining basic variables
 $RootDir = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path)
@@ -43,7 +43,7 @@ $token = $keyJson.api_key
 
 #Defining the request body
 $RequestBody = [ordered]@{
-  "model"    = "gpt-3.5-turbo";
+  "model"    = "gpt-4";
   "messages" = @(
     @{
       "role"    = "system";
@@ -76,6 +76,7 @@ for ($i = 0; $i -lt 5; $i++) {
   }
   catch {
     Write-Warning "That model is currently overloaded with other requests. Retrying in 1 second..."
+    Write-Output $_.Exception.Response
     Start-Sleep -Seconds 1
   }
 }
