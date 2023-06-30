@@ -27,11 +27,13 @@
 #Defining default parameter
 Param(
   [Parameter(Mandatory = $true, Position = 0)]
-  [string]$Command = "Which commands can I request?"
+  [string]$Command = "Which commands can I request?",
+  [Parameter(Mandatory = $false, Position = 1)][ValidateSet("gpt-4", "gpt-3.5-turbo", "text-davinci-003")]
+  [string]$model = "gpt-3.5-turbo"
 )
 
 #Clearing the Screen
-#Clear-Host
+Clear-Host
 
 #Defining basic variables
 $RootDir = [System.IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Path)
@@ -43,7 +45,7 @@ $token = $keyJson.api_key
 
 #Defining the request body
 $RequestBody = [ordered]@{
-  "model"    = "gpt-4";
+  "model"    = $model;
   "messages" = @(
     @{
       "role"    = "system";
@@ -76,7 +78,8 @@ for ($i = 0; $i -lt 5; $i++) {
   }
   catch {
     Write-Warning "That model is currently overloaded with other requests. Retrying in 1 second..."
-    Write-Output $_.Exception.Response
+    Write-Output $_.Exception.ResponseStatusCode
+    Write-Output $_.Exception.StatusDescription
     Start-Sleep -Seconds 1
   }
 }
